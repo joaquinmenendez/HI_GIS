@@ -1,0 +1,10 @@
+# Pycharm
+.idea*
+
+# Juyter
+.ipynb*
+__pycache*
+# Data
+provincias_cp_localidades.csv
+
+
