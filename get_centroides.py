@@ -2,7 +2,6 @@ import requests
 import urllib
 
 API_BASE_URL = "https://apis.datos.gob.ar/georef/api/"
-
 def get_centroides(endpoint, nombre, **kwargs):
     '''
     La funcion toma un endpoint y un nombre y realiza una request a la API del gobierno argentino
@@ -15,7 +14,8 @@ def get_centroides(endpoint, nombre, **kwargs):
     :return: list - Lista de diccionarios (json) con diferentes campos devueltos
                     dependiendo del endpoint seleccionado ('centroide','id', 'nombre')
     '''
-    API_BASE_URL = "https://apis.datos.gob.ar/georef/api/"
+    #API_BASE_URL = "https://apis.datos.gob.ar/georef/api/"
+    kwargs["nombre"] = nombre
     url = f"{API_BASE_URL}{endpoint}?{urllib.parse.urlencode(kwargs)}"
     return requests.get(url).json()[endpoint]
 
@@ -56,15 +56,14 @@ def post_centroides(endpoint, prov_loc, prov = True):
     'param prov: boolean default True
     :returns: list[dict]
     """
-    API_BASE_URL = "https://apis.datos.gob.ar/georef/api/"
-    # realiza consulta a la API
+    #API_BASE_URL = "https://apis.datos.gob.ar/georef/api/"
     if prov:
         data = {
                 endpoint: [ {"nombre": loc, "max": 1, 'provincia' : prov} for prov,loc in prov_loc]
                 }
     else:
         data = {
-                endpoint: [ {"nombre": loc, "max": 1} for loc in prov_loc]
+                endpoint: [ {"nombre": loc, "max": 1} for prov,loc in prov_loc]
                 }
     url = API_BASE_URL + endpoint
     results = requests.post(url, json = data, headers={"Content-Type": "application/json"}).json()
