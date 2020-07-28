@@ -5,6 +5,7 @@
 .ipynb*
 __pycache*
 # Data
-provincias_cp_localidades.csv
+./*.csv
+./*.pickle
 
 
