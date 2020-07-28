@@ -1,7 +1,11 @@
 import requests
 import urllib
+from functools import reduce  
+import operator
+
 
 API_BASE_URL = "https://apis.datos.gob.ar/georef/api/"
+
 def get_centroides(endpoint, nombre, **kwargs):
     '''
     La funcion toma un endpoint y un nombre y realiza una request a la API del gobierno argentino
@@ -75,3 +79,14 @@ def post_centroides(endpoint, prov_loc, prov = True):
     ]
 
     return parsed_results
+
+def getFromDict(dataDict, *args):
+    '''
+    Esta funcion toma un diccionario y busca la key correspondiente a una concatenacion de keys
+    ex: dict[key 1][key 2]...[key n]
+    '''
+    if len(dataDict) == 0:
+        return 'NO HUBO REQUEST'
+    else:
+        mapList = args
+        return reduce(operator.getitem, mapList, dataDict)
