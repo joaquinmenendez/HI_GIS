@@ -5,7 +5,7 @@
 .ipynb*
 __pycache*
 # Data
-./*.csv
-./*.pickle
+*.csv
+*.pickle
 
 
