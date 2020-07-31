@@ -2,6 +2,10 @@ import requests
 import urllib
 from functools import reduce  
 import operator
+import pandas as pd
+import numpy as np
+import geopandas
+import geopy.distance as dist
 
 
 API_BASE_URL = "https://apis.datos.gob.ar/georef/api/"
@@ -112,7 +116,7 @@ def getDistances(row, df_distancias, nivel = 'localidad'):
     if (not isinstance(row[lat], float)) or (pd.isna(row[lat])):
         return None # Si no hay coordenadas para poder calcular distancia devolve None
     #Si hay coordenadas calcula las distancias
-    dist_to_sede = df_distancias.apply(lambda x: round(geopy.distance.distance(
+    dist_to_sede = df_distancias.apply(lambda x: round(dist.distance(
 																				(lon_user,lat_user),
 																				(x.longitud, x.latitud)).km,
 																			    3),
