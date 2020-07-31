@@ -80,6 +80,7 @@ def post_centroides(endpoint, prov_loc, prov = True):
 
     return parsed_results
 
+
 def getFromDict(dataDict, *args):
     '''
     Esta funcion toma un diccionario y busca la key correspondiente a una concatenacion de keys
@@ -90,3 +91,66 @@ def getFromDict(dataDict, *args):
     else:
         mapList = args
         return reduce(operator.getitem, mapList, dataDict)
+	
+	
+def getDistances(row, df_distancias, nivel = 'localidad'):
+    '''
+    Para cada row de un dataset (o una una Serie) devuelve una lista de tuplas con las distancias a diferentes sedes.
+    :param row: pandas.Series
+    :param df_distancias: pandas.DataFrame
+    :param nivel: str (localidad, municipio, departamento, provincia)
+    :return: numpy.Matrix
+    '''
+    niveles = {'municipio' : ('centroide_lat_municipio', 'centroide_lon_municipio'),
+               'localidad' : ('centroide_lat_localidad', 'centroide_lon_localidad'),
+               'provincia' : ('centroide_lat_provincia', 'centroide_lon_provincia'),
+               'departamento': ('centroide_lat_departamento', 'centroide_lon_departamento')
+              }
+    dist_to_sede = []
+    lat, lon = niveles[nivel] #  assign lat lon 
+    lat_user, lon_user = row[lat], row[lon]
+    if (not isinstance(row[lat], float)) or (pd.isna(row[lat])):
+        return None # Si no hay coordenadas para poder calcular distancia devolve None
+    #Si hay coordenadas calcula las distancias
+    dist_to_sede = df_distancias.apply(lambda x: round(geopy.distance.distance(
+																				(lon_user,lat_user),
+																				(x.longitud, x.latitud)).km,
+																			    3),
+                                       axis = 1)
+	
+    #Realiza arrreglos a la matrix
+    matrix = np.array([dist_to_sede,df_distancias.tipo, df_distancias.sede]).T
+    return matrix 
+
+
+def minPorTipo(matrix, tipo = None):
+    '''
+    Toma una matrix de numpy con la distancia de un sujeto a N sedes y devuelve el tipo de sede mas cercano
+    :param matrix: numpy.Matrix
+    :param tipo: list[str]
+    :return: numpy.array
+    '''
+    if tipo:
+        sedes_dist = []
+        for t in tipo:
+            val = matrix[matrix[:,1] == t] #sort by tipo
+            idx = (val[:,0]).argsort()[:1] # N index sorted by minimum distance value
+            sedes_dist.append(val[idx][0])
+        return sedes_dist
+    else:
+        idx = (matrix[:,0]).argsort()[:1]
+        return matrix[idx]
+    
+	
+def getMinPorTipo(row, df_distancias, nivel = 'localidad', tipo = None):
+    '''
+    Toma una row de un dataset y devuelve las sedes de X tipo mas cercano a la ubicacion de esa row
+    :param row: pandas.Series
+    :param df_distancias: pandas.DataFrame. Dataframe con informacion de las diferentes sedes del HI
+    :param nivel: str (localidad, municipio, departamento, provincia)
+    :param tipo: list[str]. Posibles valores = ['CENTRO PERIFERICO', 'HOSPITAL']
+    '''
+    m = getDistances(row, df_distancias, nivel = nivel)
+    if m is None:
+        return None
+    return minPorTipo(m, tipo = tipo)
